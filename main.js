@@ -2,83 +2,50 @@
    Mela Rossa Restaurant & Cafe
    Vanilla ES6, no libraries. Motion only touches transform
    and opacity, driven by IntersectionObserver and
-   requestAnimationFrame.
+   requestAnimationFrame. Each feature runs on its own, so one
+   failure never leaves the page half hidden.
    ========================================================= */
 
 (() => {
   'use strict';
+  if (window.__melaRossaInit) return; // inline copy and main.js: run once
+  window.__melaRossaInit = true;
+
+  const root = document.documentElement;
+  root.classList.add('js');
 
   // ---------- Settings ----------
   const CURRENCY = 'EGP'; // PLACEHOLDER: confirm the currency shown with prices
   const WHATSAPP = '201280060772';
-  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const FINE_POINTER = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const mq = (q) => (window.matchMedia ? window.matchMedia(q).matches : false);
+  const REDUCED = mq('(prefers-reduced-motion: reduce)');
+  const FINE_POINTER = mq('(hover: hover) and (pointer: fine)');
+  const HAS_IO = 'IntersectionObserver' in window;
 
-  // PLACEHOLDER DISHES AND PRICES: replace with the real Mela Rossa menu.
-  // PLACEHOLDER PHOTOS (Unsplash): replace with real photos of each dish.
-  const MENU = [
-    {
-      id: 'pappardelle',
-      name: 'Pappardelle with Roasted Seasonal Vegetables',
-      category: 'mains',
-      price: 35.0,
-      desc: 'Placeholder dish. Wide ribbon pasta with roasted vegetables.',
-      img: 'https://images.unsplash.com/photo-1611270629569-8b357cb88da9',
-      ratio: [800, 1200],
-      alt: 'Bowl of pappardelle ribbons with herbs and a rich sauce'
-    },
-    {
-      id: 'ravioli',
-      name: 'Ravioli Stuffed with Creamy Walnut & Pesto Sauce',
-      category: 'mains',
-      price: 38.5,
-      desc: 'Placeholder dish. Filled pasta with walnut cream and pesto.',
-      img: 'https://images.unsplash.com/photo-1587740908075-9e245070dfaa',
-      ratio: [800, 1067],
-      alt: 'Square ravioli dusted with grated cheese on a dark plate'
-    },
-    {
-      id: 'filetto',
-      name: 'Filetto di Manzo, Beef Tenderloin in Rosemary Glaze',
-      category: 'mains',
-      price: 48.0,
-      desc: 'Placeholder dish. Sliced beef tenderloin with a rosemary glaze.',
-      img: 'https://images.unsplash.com/photo-1558030006-450675393462',
-      ratio: [800, 450],
-      alt: 'Sliced medium-rare beef tenderloin on a wooden board'
-    },
-    {
-      id: 'roast',
-      name: 'Mela Rossa Roast, Signature Dark Espresso Blend',
-      category: 'drinks',
-      price: 8.0,
-      desc: 'Placeholder drink. Our dark espresso blend.',
-      img: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04',
-      ratio: [800, 533],
-      alt: 'White cup of espresso seen from above on a dark stone table'
-    }
-  ];
-
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const $ = (sel, scope = document) => scope.querySelector(sel);
+  const $$ = (sel, scope = document) => Array.from(scope.querySelectorAll(sel));
   const money = (n) => `${n.toFixed(2)} ${CURRENCY}`;
   const unsplash = (base, w) => `${base}?w=${w}&q=75&auto=format&fit=crop`;
 
-  // Closed overlays are display:none so they stay hidden under reduced motion.
+  const safely = (name, fn) => {
+    try { fn(); } catch (err) {
+      root.classList.add('js-fallback');
+      console.error(`Mela Rossa: ${name} failed`, err);
+    }
+  };
+
   const cart = $('#cart');
   const scrim = $('#scrim');
   const lightbox = $('#lightbox');
-  cart.hidden = true;
-  lightbox.hidden = true;
-  lightbox.classList.add('is-ready');
+  const grid = $('#menu-grid');
 
-  $('#year').textContent = new Date().getFullYear();
+  safely('year', () => { $('#year').textContent = String(new Date().getFullYear()); });
 
-  // ---------- Image fallback mark ----------
+  // ---------- Image upgrades: fade in on load, branded fallback on error ----------
   const FALLBACK_SRC = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
     '<rect width="400" height="300" fill="#1a1a1a"/>' +
-    '<g transform="translate(168 108) scale(1)">' +
+    '<g transform="translate(168 108)">' +
     '<path d="M32 21c3-5 9-7 13-5-1 5-6 8-13 5z" fill="#2E4F23"/>' +
     '<path d="M31 21c-2-4-7-6-11-4 1 4 5 6 11 4z" fill="#3E6A30"/>' +
     '<path d="M32 24c-4-3-11-3-15 1-5 5-5 15-1 23 3 6 8 9 12 9 2 0 3-1 4-1s2 1 4 1c4 0 9-3 12-9 4-8 4-18-1-23-4-4-11-4-15-1z" fill="#8B1E14"/>' +
@@ -94,70 +61,70 @@
       if (img.dataset.fallback) return;
       img.dataset.fallback = '1';
       img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
       img.src = FALLBACK_SRC;
       img.alt = `${img.alt} (photo unavailable)`;
       box.classList.add('is-fallback');
       done();
     };
-    img.addEventListener('load', done, { once: true });
-    img.addEventListener('error', fail, { once: true });
+    img.addEventListener('load', done);
+    img.addEventListener('error', fail);
     if (img.complete) {
       if (img.naturalWidth > 0) done();
-      else if (img.currentSrc || img.src) fail();
+      else if (img.getAttribute('loading') !== 'lazy') fail(); // failed before this script ran
     }
   }
+  safely('images', () => $$('.media img').forEach(watchImage));
 
-  // ---------- Menu cards ----------
-  const grid = $('#menu-grid');
-
-  function cardHTML(item) {
-    const [w, h] = item.ratio;
-    return `
-      <article class="card" data-category="${item.category}">
-        <figure class="media card__media">
-          <img src="${unsplash(item.img, 800)}"
-               srcset="${unsplash(item.img, 400)} 400w, ${unsplash(item.img, 800)} 800w, ${unsplash(item.img, 1200)} 1200w"
-               sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 25vw"
-               width="${w}" height="${h}" style="aspect-ratio:${w}/${h}"
-               alt="${item.alt}" loading="lazy" decoding="async">
-          <span class="card__tag">${item.category === 'drinks' ? 'Drinks' : 'Mains'}</span>
-        </figure>
-        <div class="card__body">
-          <h3 class="card__title">${item.name}</h3>
-          <p class="card__desc">${item.desc}</p>
-          <div class="card__foot">
-            <span class="card__price">${item.price.toFixed(2)}<small>${CURRENCY}</small></span>
-            <button class="btn btn--red card__add magnetic" type="button" data-add="${item.id}"
-                    aria-label="Add ${item.name} to cart">Add to cart</button>
-          </div>
-        </div>
-      </article>`;
-  }
-
-  grid.innerHTML = MENU.map(cardHTML).join('');
-  $$('.media img').forEach(watchImage);
+  // ---------- Menu data, read from the cards in the HTML ----------
+  const MENU = [];
+  safely('menu', () => {
+    $$('.card', grid).forEach((card) => {
+      const price = parseFloat(card.dataset.price);
+      MENU.push({ id: card.dataset.id, name: $('.card__title', card).textContent.trim(), price });
+      $('.card__amount', card).textContent = price.toFixed(2);
+      $('.card__currency', card).textContent = CURRENCY;
+    });
+  });
 
   // ---------- Filters ----------
-  $$('.filter').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const f = btn.dataset.filter;
-      $$('.filter').forEach((b) => {
-        const on = b === btn;
-        b.classList.toggle('is-active', on);
-        b.setAttribute('aria-pressed', String(on));
-      });
-      $$('.card', grid).forEach((card) => {
-        const show = f === 'all' || card.dataset.category === f;
-        if (show) {
-          card.hidden = false;
-          requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('is-out')));
-        } else {
-          card.classList.add('is-out');
-          setTimeout(() => { if (card.classList.contains('is-out')) card.hidden = true; }, REDUCED ? 0 : 320);
-        }
+  safely('filters', () => {
+    const filters = $$('.filter');
+    filters.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.filter;
+        filters.forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+        $$('.card', grid).forEach((card) => {
+          clearTimeout(card._hideTimer);
+          const show = f === 'all' || card.dataset.category === f;
+          if (show) {
+            card.hidden = false;
+            requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('is-out')));
+          } else {
+            card.classList.add('is-out');
+            card._hideTimer = setTimeout(() => { card.hidden = true; }, REDUCED ? 0 : 320);
+          }
+        });
       });
     });
   });
+
+  // ---------- Overlays (opacity and transform only) ----------
+  function openLayer(el) {
+    clearTimeout(el._hideTimer);
+    el.hidden = false;
+    void el.offsetWidth;
+    el.classList.add('is-open');
+  }
+  function closeLayer(el) {
+    el.classList.remove('is-open');
+    const hide = () => { if (!el.classList.contains('is-open')) el.hidden = true; };
+    if (REDUCED) hide(); else el._hideTimer = setTimeout(hide, 600);
+  }
 
   // ---------- Cart ----------
   const lines = new Map(); // id -> qty
@@ -174,9 +141,10 @@
     const text = [];
     lines.forEach((qty, id) => {
       const item = MENU.find((m) => m.id === id);
+      if (!item) return;
       count += qty;
       total += qty * item.price;
-      text.push(`${qty} x ${item.name}`);
+      text.push(`${qty} x ${item.name} (${money(item.price * qty)})`);
       rows.push(`
         <li class="cart__item">
           <div>
@@ -194,7 +162,9 @@
     totalEl.textContent = money(total);
     countEl.textContent = String(count);
     cartBtn.setAttribute('aria-label', `Cart, ${count} item${count === 1 ? '' : 's'}`);
-    const msg = text.length ? `Hello Mela Rossa, I would like to order:\n${text.join('\n')}` : 'Hello Mela Rossa';
+    const msg = text.length
+      ? `Hello Mela Rossa, I would like to order:\n${text.join('\n')}\nTotal: ${money(total)}`
+      : 'Hello Mela Rossa';
     orderLink.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -204,98 +174,120 @@
     countEl.classList.add('is-bump');
   }
 
-  document.addEventListener('click', (e) => {
-    const add = e.target.closest('[data-add]');
-    const inc = e.target.closest('[data-inc]');
-    const dec = e.target.closest('[data-dec]');
-    if (add) { lines.set(add.dataset.add, (lines.get(add.dataset.add) || 0) + 1); renderCart(); bump(); }
-    if (inc) { lines.set(inc.dataset.inc, lines.get(inc.dataset.inc) + 1); renderCart(); bump(); }
-    if (dec) {
-      const q = lines.get(dec.dataset.dec) - 1;
-      if (q > 0) lines.set(dec.dataset.dec, q); else lines.delete(dec.dataset.dec);
-      renderCart();
-    }
-  });
-
-  // open / close helpers for overlays (opacity and transform only)
-  function openLayer(el) {
-    el.hidden = false;
-    void el.offsetWidth;
-    el.classList.add('is-open');
-  }
-  function closeLayer(el) {
-    el.classList.remove('is-open');
-    const hide = () => { if (!el.classList.contains('is-open')) el.hidden = true; };
-    if (REDUCED) hide(); else setTimeout(hide, 600);
-  }
-
   function openCart() {
     openLayer(scrim); openLayer(cart);
     cart.setAttribute('aria-hidden', 'false');
     $('#cart-close').focus();
   }
   function closeCart() {
+    if (!cart.classList.contains('is-open')) return;
     closeLayer(cart); closeLayer(scrim);
     cart.setAttribute('aria-hidden', 'true');
     cartBtn.focus();
   }
-  cartBtn.addEventListener('click', openCart);
-  $('#cart-close').addEventListener('click', closeCart);
-  scrim.addEventListener('click', closeCart);
-  renderCart();
+
+  safely('cart', () => {
+    document.addEventListener('click', (e) => {
+      const add = e.target.closest('[data-add]');
+      const inc = e.target.closest('[data-inc]');
+      const dec = e.target.closest('[data-dec]');
+      if (add) { const id = add.dataset.add; lines.set(id, (lines.get(id) || 0) + 1); renderCart(); bump(); }
+      if (inc) { const id = inc.dataset.inc; lines.set(id, (lines.get(id) || 0) + 1); renderCart(); bump(); }
+      if (dec) {
+        const id = dec.dataset.dec;
+        const q = (lines.get(id) || 0) - 1;
+        if (q > 0) lines.set(id, q); else lines.delete(id);
+        renderCart();
+        if (!lines.has(id)) $('#cart-close').focus(); // the pressed button is gone
+      }
+    });
+    cartBtn.addEventListener('click', openCart);
+    $('#cart-close').addEventListener('click', closeCart);
+    scrim.addEventListener('click', closeCart);
+    renderCart();
+  });
 
   // ---------- Mobile nav ----------
   const toggle = $('#nav-toggle');
   const links = $('#nav-links');
-  toggle.addEventListener('click', () => {
-    const open = toggle.getAttribute('aria-expanded') !== 'true';
+  const setMenu = (open) => {
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     links.classList.toggle('is-open', open);
-  });
-  $$('.nav__link', links).forEach((a) => a.addEventListener('click', () => {
-    toggle.setAttribute('aria-expanded', 'false');
-    links.classList.remove('is-open');
-  }));
-
-  // nav background on scroll, current section link
-  const nav = $('.nav');
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => { nav.classList.toggle('is-scrolled', window.scrollY > 20); ticking = false; });
-  }, { passive: true });
-
-  const sectionIO = new IntersectionObserver((entries) => {
-    entries.forEach((en) => {
-      if (!en.isIntersecting) return;
-      $$('.nav__link').forEach((a) => a.classList.toggle('is-current', a.getAttribute('href') === `#${en.target.id}`));
+  };
+  const menuOpen = () => links.classList.contains('is-open');
+  safely('mobile nav', () => {
+    toggle.addEventListener('click', () => setMenu(!menuOpen()));
+    $$('.nav__link', links).forEach((a) => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('click', (e) => {
+      if (menuOpen() && !e.target.closest('.nav')) setMenu(false);
     });
-  }, { rootMargin: '-45% 0px -50% 0px' });
-  $$('main section[id]').forEach((s) => sectionIO.observe(s));
+  });
+
+  // ---------- Nav background on scroll, current section link ----------
+  safely('nav state', () => {
+    const nav = $('.nav');
+    let ticking = false;
+    const onScroll = () => { nav.classList.toggle('is-scrolled', window.scrollY > 20); ticking = false; };
+    window.addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(onScroll);
+    }, { passive: true });
+    onScroll();
+    if (!HAS_IO) return;
+    const navLinks = $$('.nav__link');
+    const sectionIO = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        navLinks.forEach((a) => a.classList.toggle('is-current', a.getAttribute('href') === `#${en.target.id}`));
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    $$('main section[id]').forEach((s) => sectionIO.observe(s));
+  });
 
   // ---------- Pattern A: Snap-In headings ----------
+  // The real text stays in a screen-reader span; the animated letters are aria-hidden.
   function splitHeading(el) {
-    const words = el.textContent.trim().split(/\s+/);
+    const text = el.textContent.trim().replace(/\s+/g, ' ');
+    const sr = document.createElement('span');
+    sr.className = 'sr-only';
+    sr.textContent = text;
+    const vis = document.createElement('span');
+    vis.setAttribute('aria-hidden', 'true');
     let i = 0;
-    el.innerHTML = words.map((w) => {
-      const chars = Array.from(w).map((c) => `<span class="char" style="--i:${i++}">${c}</span>`).join('');
+    text.split(' ').forEach((word, wi) => {
+      if (wi) vis.appendChild(document.createTextNode(' '));
+      const w = document.createElement('span');
+      w.className = 'word';
+      Array.from(word).forEach((c) => {
+        const s = document.createElement('span');
+        s.className = 'char';
+        s.style.setProperty('--i', String(i++));
+        s.textContent = c;
+        w.appendChild(s);
+      });
       i++;
-      return `<span class="word" aria-hidden="true">${chars}</span>`;
-    }).join(' ');
-  }
-  const heads = $$('.split');
-  heads.forEach(splitHeading);
-  const headIO = new IntersectionObserver((entries) => {
-    entries.forEach((en) => {
-      if (en.isIntersecting) { en.target.classList.add('is-in'); headIO.unobserve(en.target); }
+      vis.appendChild(w);
     });
-  }, { threshold: 0.3 });
-  heads.forEach((h) => (REDUCED ? h.classList.add('is-in') : headIO.observe(h)));
+    el.replaceChildren(sr, vis);
+  }
+  safely('headings', () => {
+    const heads = $$('.split');
+    if (REDUCED || !HAS_IO) { heads.forEach((h) => h.classList.add('is-in')); }
+    heads.forEach(splitHeading);
+    if (REDUCED || !HAS_IO) return;
+    const headIO = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { en.target.classList.add('is-in'); headIO.unobserve(en.target); }
+      });
+    }, { threshold: 0.2 });
+    heads.forEach((h) => headIO.observe(h));
+  });
 
   // ---------- Pattern B: 3D card tilt ----------
-  if (!REDUCED && FINE_POINTER) {
+  safely('tilt', () => {
+    if (REDUCED || !FINE_POINTER) return;
     const MAX_TILT = 12;
     $$('.card', grid).forEach((card) => {
       let frame = 0;
@@ -321,10 +313,11 @@
         card.style.transform = ''; // eased back by the spring transition
       });
     });
-  }
+  });
 
   // ---------- Pattern C: magnetic CTAs, nav links, cart ----------
-  if (!REDUCED && FINE_POINTER) {
+  safely('magnetic', () => {
+    if (REDUCED || !FINE_POINTER) return;
     const FIELD = 40;
     const PULL = 0.25;
     const mags = $$('.magnetic');
@@ -336,6 +329,7 @@
       mags.forEach((el) => {
         if (el.closest('.card.is-tilting')) return;
         const r = el.getBoundingClientRect();
+        if (!r.width) return; // hidden (closed mobile menu)
         const inside = mx > r.left - FIELD && mx < r.right + FIELD && my > r.top - FIELD && my < r.bottom + FIELD;
         if (inside) {
           const dx = (mx - (r.left + r.width / 2)) * PULL;
@@ -353,19 +347,21 @@
       if (!queued) { queued = true; requestAnimationFrame(update); }
     }, { passive: true });
     document.addEventListener('pointerleave', () => { mx = my = -9999; requestAnimationFrame(update); });
-  }
+  });
 
-  // ---------- Pattern D: infinite ticker ----------
-  (function ticker() {
+  // ---------- Pattern D: infinite ticker (clones, hover slow, drag with momentum) ----------
+  safely('ticker', () => {
+    if (REDUCED) return; // static, wrapped list under reduced motion
     const wrap = $('.ticker');
     const track = $('#ticker-track');
     const group = $('.ticker__group', track);
-    if (REDUCED) return;
 
-    // clone the group until the track covers twice the viewport
+    // clone the group until the track covers the strip twice over
     const fill = () => {
       $$('.ticker__group[data-clone]', track).forEach((n) => n.remove());
-      const need = Math.ceil((window.innerWidth * 2) / group.offsetWidth) + 1;
+      const gw = group.offsetWidth;
+      if (!gw) return;
+      const need = Math.ceil((wrap.offsetWidth * 2) / gw) + 1;
       for (let i = 0; i < need; i++) {
         const c = group.cloneNode(true);
         c.dataset.clone = '1';
@@ -374,10 +370,12 @@
       }
     };
     fill();
-    window.addEventListener('resize', fill);
+    let resizeTimer = 0;
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(fill, 150); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fill); // widths change once fonts land
 
     const BASE = 0.6;   // px per frame
-    const SLOW = 0.15;
+    const SLOW = 0.15;  // on hover
     let speed = BASE;
     let target = BASE;
     let x = 0;
@@ -386,14 +384,15 @@
     let velocity = 0;
     let visible = true;
 
-    new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(wrap);
+    if (HAS_IO) new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(wrap);
 
-    wrap.addEventListener('pointerenter', () => { target = SLOW; });
+    wrap.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') target = SLOW; });
     wrap.addEventListener('pointerleave', () => { target = BASE; });
     wrap.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
       dragging = true; lastX = e.clientX; velocity = 0;
       wrap.classList.add('is-dragging');
-      wrap.setPointerCapture(e.pointerId);
+      try { wrap.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
     });
     wrap.addEventListener('pointermove', (e) => {
       if (!dragging) return;
@@ -405,84 +404,143 @@
     const release = () => { dragging = false; wrap.classList.remove('is-dragging'); };
     wrap.addEventListener('pointerup', release);
     wrap.addEventListener('pointercancel', release);
+    wrap.addEventListener('lostpointercapture', release);
 
     const loop = () => {
       if (visible) {
         const w = group.offsetWidth;
         if (!dragging) {
           speed += (target - speed) * 0.06;
-          velocity *= 0.94;              // momentum decay after a drag
+          velocity *= 0.94; // momentum decay after a drag
           x += velocity - speed;
         }
-        if (x <= -w) x += w;
-        if (x > 0) x -= w;
+        if (w) { x %= w; if (x > 0) x -= w; } // keep x in (-w, 0]
         track.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
       }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
-  })();
+  });
 
   // ---------- Gallery lightbox ----------
   const lbImg = $('#lightbox-img');
+  const lbClose = $('#lightbox-close');
   let lastFocus = null;
   function openLightbox(img) {
     lastFocus = document.activeElement;
-    const base = img.currentSrc.split('?')[0];
-    lbImg.src = img.dataset.fallback ? img.src : unsplash(base, 1200);
+    const src = img.currentSrc || img.src;
+    lbImg.onerror = () => { lbImg.onerror = null; lbImg.src = src; };
+    lbImg.src = img.dataset.fallback ? src : unsplash(src.split('?')[0], 1200);
     lbImg.alt = img.alt;
-    lbImg.width = img.width && img.naturalWidth ? img.naturalWidth : 1200;
-    lbImg.height = img.height && img.naturalHeight ? img.naturalHeight : 800;
+    lbImg.width = img.naturalWidth || Number(img.getAttribute('width')) || 1200;
+    lbImg.height = img.naturalHeight || Number(img.getAttribute('height')) || 800;
     openLayer(lightbox);
     lightbox.setAttribute('aria-hidden', 'false');
-    $('#lightbox-close').focus();
+    lbClose.focus();
   }
   function closeLightbox() {
+    if (!lightbox.classList.contains('is-open')) return;
     closeLayer(lightbox);
     lightbox.setAttribute('aria-hidden', 'true');
-    if (lastFocus) lastFocus.focus();
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
-  $$('.gallery__item').forEach((btn) => btn.addEventListener('click', () => openLightbox($('img', btn))));
-  $('#lightbox-close').addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (lightbox.classList.contains('is-open')) closeLightbox();
-    else if (cart.classList.contains('is-open')) closeCart();
+  safely('lightbox', () => {
+    $$('.gallery__item').forEach((btn) => btn.addEventListener('click', () => openLightbox($('img', btn))));
+    lbClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
   });
 
-  // ---------- Booking form -> WhatsApp ----------
-  const form = $('#booking-form');
-  const errEl = $('#booking-error');
-  const today = new Date();
-  $('#b-date').min = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const fields = $$('input[required], select[required]', form);
-    let ok = true;
-    fields.forEach((f) => {
-      const bad = !f.value.trim() || !f.checkValidity();
-      f.classList.toggle('is-invalid', bad);
-      if (bad) ok = false;
+  // ---------- Keyboard: Esc closes the top layer, Tab stays inside open dialogs ----------
+  safely('keyboard', () => {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (lightbox.classList.contains('is-open')) closeLightbox();
+        else if (cart.classList.contains('is-open')) closeCart();
+        else if (menuOpen()) { setMenu(false); toggle.focus(); }
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      let layer = null;
+      if (lightbox.classList.contains('is-open')) layer = lightbox;
+      else if (cart.classList.contains('is-open')) layer = cart;
+      if (!layer) return;
+      const items = $$('button, a[href], input, select, textarea', layer).filter((n) => !n.disabled && n.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (!layer.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
     });
-    if (!ok) {
-      errEl.textContent = 'Please fill in your name, phone, date, time (10:00 to 23:00), guests and branch.';
-      return;
-    }
-    errEl.textContent = '';
-    const d = Object.fromEntries(new FormData(form).entries());
-    const msg = [
-      'Hello Mela Rossa, I would like to book a table.',
-      `Name: ${d.name}`,
-      `Phone: ${d.phone}`,
-      `Date: ${d.date}`,
-      `Time: ${d.time}`,
-      `Guests: ${d.guests}`,
-      `Branch: ${d.branch}`,
-      d.notes ? `Notes: ${d.notes}` : ''
-    ].filter(Boolean).join('\n');
-    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
   });
+
+  // ---------- Booking form -> wa.me link ----------
+  safely('booking', () => {
+    const form = $('#booking-form');
+    const errEl = $('#booking-error');
+    const statusEl = $('#booking-status');
+    const today = new Date();
+    $('#b-date').min = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fields = $$('input[required], select[required]', form);
+      let ok = true;
+      fields.forEach((f) => {
+        let bad = !f.value.trim() || !f.checkValidity();
+        if (f.name === 'phone' && f.value.replace(/\D/g, '').length < 7) bad = true;
+        f.classList.toggle('is-invalid', bad);
+        f.setAttribute('aria-invalid', String(bad));
+        if (bad) ok = false;
+      });
+      if (!ok) {
+        errEl.textContent = 'Please fill in your name, phone, date, time (10:00 to 23:00), guests (1 to 30) and branch.';
+        statusEl.textContent = '';
+        const firstBad = $('.is-invalid', form);
+        if (firstBad) firstBad.focus();
+        return;
+      }
+      errEl.textContent = '';
+      const d = Object.fromEntries(new FormData(form).entries());
+      const msg = [
+        'Hello Mela Rossa, I would like to book a table.',
+        `Name: ${d.name.trim()}`,
+        `Phone: ${d.phone.trim()}`,
+        `Date: ${d.date}`,
+        `Time: ${d.time}`,
+        `Guests: ${d.guests}`,
+        `Branch: ${d.branch}`,
+        d.notes && d.notes.trim() ? `Notes: ${d.notes.trim()}` : ''
+      ].filter(Boolean).join('\n');
+      const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+      form.dataset.whatsapp = url;
+
+      statusEl.textContent = 'Your booking message is ready. If WhatsApp did not open, ';
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'tap here to send it';
+      statusEl.appendChild(a);
+      statusEl.appendChild(document.createTextNode('.'));
+      a.click();
+    });
+  });
+
+  // ---------- In-page links: scrolled by script so they also work from blob: and data: copies ----------
+  safely('anchors', () => {
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      const id = a.getAttribute('href').slice(1);
+      const target = id ? document.getElementById(id) : null;
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
+      if (id === 'main') { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
+      try { history.replaceState(null, '', '#' + id); } catch (_) { /* blob: and data: pages refuse */ }
+    });
+  });
+
+  window.__melaRossaReady = true;
 })();
