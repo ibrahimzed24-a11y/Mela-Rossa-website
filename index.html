@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mela Rossa | Restaurant &amp; Cafe in Damietta</title>
+  <meta name="description" content="Mela Rossa, a family restaurant and cafe in Damietta, Egypt. Corniche branch and New Damietta branch. Open daily 10:00 AM to 11:00 PM.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Reusable logo mark: red apple shaped like a coffee cup, steam and two green leaves -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="logo-mark" viewBox="0 0 64 64">
+      <path class="steam" d="M27 14c-2-3 2-5 0-8M33 14c-2-3 2-5 0-8" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+      <path d="M32 21c3-5 9-7 13-5-1 5-6 8-13 5z" fill="#2E4F23"/>
+      <path d="M31 21c-2-4-7-6-11-4 1 4 5 6 11 4z" fill="#3E6A30"/>
+      <path d="M32 24c-4-3-11-3-15 1-5 5-5 15-1 23 3 6 8 9 12 9 2 0 3-1 4-1s2 1 4 1c4 0 9-3 12-9 4-8 4-18-1-23-4-4-11-4-15-1z" fill="#8B1E14"/>
+      <path d="M48 31c5 0 8 3 7 7s-5 6-9 5" fill="none" stroke="#8B1E14" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M22 30c-2 3-3 7-2 11" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+    </symbol>
+  </svg>
+
+  <!-- ===== Navbar ===== -->
+  <header class="nav" id="top">
+    <div class="nav__inner container">
+      <a href="#home" class="brand" aria-label="Mela Rossa, back to top">
+        <svg class="brand__mark" width="44" height="44" aria-hidden="true"><use href="#logo-mark"/></svg>
+        <span class="brand__text">
+          <span class="brand__name">MELA ROSSA</span>
+          <span class="brand__tag">RESTAURANT &amp; CAFE</span>
+        </span>
+      </a>
+
+      <nav class="nav__links" id="nav-links" aria-label="Main">
+        <a href="#home" class="nav__link magnetic">Home</a>
+        <a href="#menu" class="nav__link magnetic">Menu</a>
+        <a href="#about" class="nav__link magnetic">About Us</a>
+        <a href="#gallery" class="nav__link magnetic">Gallery</a>
+        <a href="#contact" class="nav__link magnetic">Contact</a>
+      </nav>
+
+      <div class="nav__actions">
+        <button class="cart-btn magnetic" id="cart-btn" type="button" aria-label="Cart, 0 items">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
+          <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
+        </button>
+        <a href="#contact" class="btn btn--red magnetic nav__cta">Book A Table</a>
+        <button class="nav__toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== Hero ===== -->
+    <section class="hero" id="home">
+      <figure class="media hero__media">
+        <!-- PLACEHOLDER PHOTO (Unsplash): replace with a real photo of a Mela Rossa branch -->
+        <img
+          src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=75&auto=format&fit=crop"
+          srcset="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=75&auto=format&fit=crop 400w,
+                  https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=75&auto=format&fit=crop 800w,
+                  https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=75&auto=format&fit=crop 1200w"
+          sizes="100vw"
+          width="1200" height="800" style="aspect-ratio:3/2"
+          alt="Warm, dimly lit restaurant dining room with wooden tables and dark chairs"
+          loading="eager" fetchpriority="high" decoding="async">
+      </figure>
+      <div class="hero__content container">
+        <p class="eyebrow">Family Restaurant &amp; Cafe · Damietta</p>
+        <h1 class="hero__title split" aria-label="A table for the whole family">A table for the whole family</h1>
+        <p class="hero__lead">Pasta, grills and coffee on the Nile Corniche and in New Damietta. Open every day from 10:00 AM to 11:00 PM.</p>
+        <div class="hero__ctas">
+          <a href="#contact" class="btn btn--red magnetic">Book A Table</a>
+          <a href="#menu" class="btn btn--ghost magnetic">See the Menu</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Ticker ===== -->
+    <section class="ticker" aria-label="What we serve">
+      <div class="ticker__track" id="ticker-track">
+        <ul class="ticker__group">
+          <li>Breakfast</li><li>Pasta</li><li>Pizza</li><li>Grills</li><li>Coffee</li><li>Desserts</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== Menu ===== -->
+    <section class="section menu" id="menu">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">Our Menu</p>
+          <h2 class="section__title split" aria-label="From the kitchen">From the kitchen</h2>
+          <p class="section__note">Sample dishes and prices shown as placeholders until the full menu is added.</p>
+        </div>
+
+        <div class="filters" role="group" aria-label="Filter the menu">
+          <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter" type="button" data-filter="mains" aria-pressed="false">Mains</button>
+          <button class="filter" type="button" data-filter="drinks" aria-pressed="false">Drinks</button>
+        </div>
+
+        <!-- Cards are rendered by main.js from the MENU array -->
+        <div class="menu__grid" id="menu-grid"></div>
+      </div>
+    </section>
+
+    <!-- ===== About ===== -->
+    <section class="section about" id="about">
+      <div class="container about__grid">
+        <figure class="media about__media">
+          <!-- PLACEHOLDER PHOTO (Unsplash): replace with a real photo of the Mela Rossa team or dining room -->
+          <img
+            src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=75&auto=format&fit=crop"
+            srcset="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&q=75&auto=format&fit=crop 400w,
+                    https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=75&auto=format&fit=crop 800w,
+                    https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&q=75&auto=format&fit=crop 1200w"
+            sizes="(max-width: 860px) 100vw, 50vw"
+            width="800" height="548" style="aspect-ratio:800/548"
+            alt="Bright cafe interior with plants, white chairs and a long counter"
+            loading="lazy" decoding="async">
+        </figure>
+        <div class="about__text">
+          <p class="eyebrow">About Us</p>
+          <h2 class="section__title split" aria-label="Made for long family evenings">Made for long family evenings</h2>
+          <p>Mela Rossa is a family restaurant and cafe in Damietta. Come for breakfast, stay for pasta and grills, and finish with a coffee.</p>
+          <ul class="facts">
+            <li><span>Corniche branch</span>Nile Corniche, next to the Chamber of Commerce</li>
+            <li><span>New Damietta branch</span>New Damietta</li>
+            <li><span>Hours</span>Daily, 10:00 AM to 11:00 PM</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Gallery ===== -->
+    <section class="section gallery" id="gallery">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">Gallery</p>
+          <h2 class="section__title split" aria-label="Plates, cups and good company">Plates, cups and good company</h2>
+        </div>
+        <!-- PLACEHOLDER PHOTOS (Unsplash): replace all six with real Mela Rossa photos -->
+        <div class="gallery__grid">
+          <button class="gallery__item media" type="button" aria-label="Open photo: latte art in two cups">
+            <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=75&auto=format&fit=crop"
+                 srcset="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&q=75&auto=format&fit=crop 400w, https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=75&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=75&auto=format&fit=crop 1200w"
+                 sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                 width="800" height="1200" style="aspect-ratio:2/3"
+                 alt="Two cups of coffee with latte art beside fresh herbs" loading="lazy" decoding="async">
+          </button>
+          <button class="gallery__item media" type="button" aria-label="Open photo: family dinner at a long table">
+            <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800&q=75&auto=format&fit=crop"
+                 srcset="https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&q=75&auto=format&fit=crop 400w, https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800&q=75&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=1200&q=75&auto=format&fit=crop 1200w"
+                 sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                 width="800" height="533" style="aspect-ratio:3/2"
+                 alt="A group of friends and family sharing dinner at a long restaurant table" loading="lazy" decoding="async">
+          </button>
+          <button class="gallery__item media" type="button" aria-label="Open photo: wood-fired pizza">
+            <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=75&auto=format&fit=crop"
+                 srcset="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&q=75&auto=format&fit=crop 400w, https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800&q=75&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1200&q=75&auto=format&fit=crop 1200w"
+                 sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                 width="800" height="533" style="aspect-ratio:3/2"
+                 alt="Margherita pizza with basil leaves on a stone table" loading="lazy" decoding="async">
+          </button>
+          <button class="gallery__item media" type="button" aria-label="Open photo: restaurant bar">
+            <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=75&auto=format&fit=crop"
+                 srcset="https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&q=75&auto=format&fit=crop 400w, https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=75&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200&q=75&auto=format&fit=crop 1200w"
+                 sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                 width="800" height="600" style="aspect-ratio:4/3"
+                 alt="Wooden counter with pendant lights and chalkboard menus behind it" loading="lazy" decoding="async">
+          </button>
+          <button class="gallery__item media" type="button" aria-label="Open photo: two coffees raised together">
+            <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=75&auto=format&fit=crop"
+                 srcset="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=75&auto=format&fit=crop 400w, https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=75&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=75&auto=format&fit=crop 1200w"
+                 sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                 width="800" height="533" style="aspect-ratio:3/2"
+                 alt="Two hands holding cups of coffee with latte art over a wooden table" loading="lazy" decoding="async">
+          </button>
+          <button class="gallery__item media" type="button" aria-label="Open photo: shared plates from above">
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=75&auto=format&fit=crop"
+                 srcset="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=75&auto=format&fit=crop 400w, https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=75&auto=format&fit=crop 800w, https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=75&auto=format&fit=crop 1200w"
+                 sizes="(max-width: 600px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                 width="800" height="533" style="aspect-ratio:3/2"
+                 alt="Overhead view of grilled meat, salad and dipping sauce on a wooden table" loading="lazy" decoding="async">
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Booking / Contact ===== -->
+    <section class="section contact" id="contact">
+      <div class="container contact__grid">
+        <div>
+          <p class="eyebrow">Book A Table</p>
+          <h2 class="section__title split" aria-label="Save your table">Save your table</h2>
+          <p>Send us your booking on WhatsApp and we will confirm it there.</p>
+          <ul class="facts">
+            <li><span>Phone &amp; WhatsApp</span><a href="tel:+201280060772">01280060772</a></li>
+            <li><span>Corniche branch</span>Nile Corniche, next to the Chamber of Commerce</li>
+            <li><span>New Damietta branch</span>New Damietta</li>
+            <li><span>Hours</span>Daily, 10:00 AM to 11:00 PM</li>
+          </ul>
+        </div>
+
+        <form class="booking" id="booking-form" novalidate>
+          <div class="field">
+            <label for="b-name">Name</label>
+            <input id="b-name" name="name" type="text" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="b-phone">Phone</label>
+            <input id="b-phone" name="phone" type="tel" autocomplete="tel" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="b-date">Date</label>
+              <input id="b-date" name="date" type="date" required>
+            </div>
+            <div class="field">
+              <label for="b-time">Time</label>
+              <input id="b-time" name="time" type="time" min="10:00" max="23:00" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="b-guests">Guests</label>
+              <input id="b-guests" name="guests" type="number" min="1" max="30" value="2" required>
+            </div>
+            <div class="field">
+              <label for="b-branch">Branch</label>
+              <select id="b-branch" name="branch" required>
+                <option value="Corniche branch">Corniche branch</option>
+                <option value="New Damietta branch">New Damietta branch</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="b-notes">Notes (optional)</label>
+            <textarea id="b-notes" name="notes" rows="3"></textarea>
+          </div>
+          <p class="booking__error" id="booking-error" role="alert"></p>
+          <button class="btn btn--red magnetic" type="submit">Send booking on WhatsApp</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <a href="#home" class="brand" aria-label="Mela Rossa, back to top">
+        <svg class="brand__mark" width="44" height="44" aria-hidden="true"><use href="#logo-mark"/></svg>
+        <span class="brand__text">
+          <span class="brand__name">MELA ROSSA</span>
+          <span class="brand__tag">RESTAURANT &amp; CAFE</span>
+        </span>
+      </a>
+      <div>
+        <h3 class="footer__title">Visit</h3>
+        <p>Corniche branch: Nile Corniche, next to the Chamber of Commerce</p>
+        <p>New Damietta branch</p>
+        <p>Daily, 10:00 AM to 11:00 PM</p>
+      </div>
+      <div>
+        <h3 class="footer__title">Contact</h3>
+        <p><a href="tel:+201280060772">01280060772</a></p>
+        <p><a href="https://wa.me/201280060772" target="_blank" rel="noopener">WhatsApp</a></p>
+        <p><a href="https://www.facebook.com/melarossa.eg" target="_blank" rel="noopener">Facebook</a></p>
+        <p><a href="https://linktr.ee/Melarossa.eg" target="_blank" rel="noopener">Linktree</a></p>
+      </div>
+    </div>
+    <p class="footer__copy container">© <span id="year"></span> Mela Rossa Restaurant &amp; Cafe, Damietta</p>
+  </footer>
+
+  <!-- ===== Cart drawer ===== -->
+  <aside class="cart" id="cart" aria-label="Your order" aria-hidden="true">
+    <div class="cart__head">
+      <h2 class="cart__title">Your order</h2>
+      <button class="cart__close" id="cart-close" type="button" aria-label="Close cart">×</button>
+    </div>
+    <ul class="cart__list" id="cart-list"></ul>
+    <div class="cart__foot">
+      <p class="cart__total">Total <span id="cart-total">0.00</span></p>
+      <a class="btn btn--red" id="cart-whatsapp" href="https://wa.me/201280060772" target="_blank" rel="noopener">Order on WhatsApp</a>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- ===== Lightbox ===== -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" aria-hidden="true">
+    <button class="lightbox__close" id="lightbox-close" type="button" aria-label="Close photo">×</button>
+    <img class="lightbox__img" id="lightbox-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" width="1200" height="800" decoding="async">
+  </div>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
